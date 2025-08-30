@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Dashboard - Real-time Cryptocurrency Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js REMOVED - Using static SVG instead -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* FORCE WHITE BACKGROUND ON EVERYTHING */
+        *, *::before, *::after {
+            transition: all 0.3s ease;
+        }
+        
+        /* NUCLEAR OPTION - FORCE WHITE ON EVERYTHING */
+        html, body, nav, main, aside {
+            background-color: white !important;
+        }
+        
+        /* DARK MODE OVERRIDES */
+        html.dark {
+            background-color: #111827 !important;
+        }
+        
+        body.dark {
+            background-color: #111827 !important;
+        }
+        
+        .dark nav {
+            background-color: #1f2937 !important;
+        }
+        
+        .dark aside {
+            background-color: #1f2937 !important;
+        }
+        
+        .dark main {
+            background-color: #111827 !important;
+        }
+        
+        /* SPECIFIC CARD OVERRIDES */
+        .dark .card {
+            background-color: #1e293b !important;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+        
+        .dark .card {
+            background: #1e293b;
+            border-color: #334155;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Improve text contrast */
+        .text-readable {
+            color: #111827 !important;
+        }
+        
+        .dark .text-readable {
+            color: #f9fafb !important;
+        }
+        
+        .text-readable-secondary {
+            color: #374151 !important;
+        }
+        
+        .dark .text-readable-secondary {
+            color: #d1d5db !important;
+        }
+        
+        /* FORCE WHITE BACKGROUND EVERYWHERE IN LIGHT MODE */
+        html {
+            background-color: white !important;
+        }
+        
+        html.dark {
+            background-color: #111827 !important;
+        }
+        
+        body {
+            background-color: white !important;
+        }
+        
+        body.dark {
+            background-color: #111827 !important;
+        }
+        
+        /* Force all containers to be white in light mode */
+        nav, aside, main, div {
+            background-color: inherit;
+        }
+        
+        /* Override any gray backgrounds */
+        .bg-gray-50 {
+            background-color: white !important;
+        }
+        
+        .dark .bg-gray-50 {
+            background-color: #111827 !important;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dark .card:hover {
+            box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.4);
+        }
+        
+        .price-positive {
+            color: #059669;
+            font-weight: 600;
+        }
+        
+        .dark .price-positive {
+            color: #34d399;
+        }
+        
+        .price-negative {
+            color: #dc2626;
+            font-weight: 600;
+        }
+        
+        .dark .price-negative {
+            color: #f87171;
+        }
+        
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            color: #000000 !important; /* FORCE BLACK TEXT IN LIGHT MODE */
+            font-weight: 600;
+        }
+        
+        .dark .sidebar-item {
+            color: #d1d5db !important; /* LIGHT TEXT IN DARK MODE */
+        }
+        
+        .sidebar-item:hover {
+            background-color: #f3f4f6;
+            color: #000000 !important;
+        }
+        
+        .dark .sidebar-item:hover {
+            background-color: #374151;
+            color: #ffffff !important;
+        }
+        
+        .sidebar-item.active {
+            background-color: #dbeafe;
+            color: #2563eb !important;
+            font-weight: 700;
+        }
+        
+        .dark .sidebar-item.active {
+            background-color: #1e3a8a;
+            color: #93c5fd !important;
+        }
+        
+        /* Search bar fixes */
+        #cryptoSearch {
+            background-color: white !important;
+            color: #111827 !important;
+        }
+        
+        .dark #cryptoSearch {
+            background-color: #374151 !important;
+            color: #f9fafb !important;
+        }
+        
+        #mobileSearch {
+            background-color: white !important;
+            color: #111827 !important;
+        }
+        
+        .dark #mobileSearch {
+            background-color: #374151 !important;
+            color: #f9fafb !important;
+        }
+        
+        /* Fix text visibility in light mode */
+        h1 {
+            color: #111827 !important;
+        }
+        
+        .dark h1 {
+            color: #f9fafb !important;
+        }
+        
+        h2 {
+            color: #111827 !important;
+        }
+        
+        .dark h2 {
+            color: #f9fafb !important;
+        }
+        
+        /* Fix button backgrounds and icons in light mode */
+        #mobileMenuToggle {
+            background-color: #f3f4f6 !important;
+        }
+        
+        .dark #mobileMenuToggle {
+            background-color: #374151 !important;
+        }
+        
+        #themeToggle {
+            background-color: #f3f4f6 !important;
+        }
+        
+        .dark #themeToggle {
+            background-color: #374151 !important;
+        }
+        
+        #closeMobileMenu {
+            background-color: transparent !important;
+        }
+        
+        .dark #closeMobileMenu {
+            background-color: transparent !important;
+        }
+        
+        /* Fix icon colors */
+        #mobileMenuToggle i {
+            color: #111827 !important;
+        }
+        
+        .dark #mobileMenuToggle i {
+            color: #d1d5db !important;
+        }
+        
+        #themeIcon {
+            color: #111827 !important;
+        }
+        
+        .dark #themeIcon {
+            color: #d1d5db !important;
+        }
+        
+        #closeMobileMenu i {
+            color: #111827 !important;
+        }
+        
+        .dark #closeMobileMenu i {
+            color: #d1d5db !important;
+        }
+    </style>
+    </style>
+</head>
+<body class="text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300" style="background-color: white !important;">
+    <!-- Navigation Header -->
+    <nav class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-coins text-white text-sm"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-black dark:text-white">CryptoDash</h1>
+                </div>
+                
+                <!-- Search Bar -->
+                <div class="hidden md:flex flex-1 max-w-md mx-8">
+                    <div class="relative w-full">
+                        <input type="text" 
+                               id="cryptoSearch"
+                               placeholder="Search cryptocurrencies..." 
+                               class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <i class="fas fa-search absolute left-3 top-3 text-black dark:text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <!-- Theme Toggle & User Menu -->
+                <div class="flex items-center space-x-4">
+                    <!-- Mobile menu button -->
+                    <button id="mobileMenuToggle" class="lg:hidden p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600">
+                        <i class="fas fa-bars text-black dark:text-gray-300"></i>
+                    </button>
+                    
+                    <button id="themeToggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200">
+                        <i id="themeIcon" class="fas fa-moon text-black dark:text-gray-300"></i>
+                    </button>
+                    <div class="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full"></div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
+        <!-- Sidebar -->
+        <aside class="hidden lg:block w-64 bg-white dark:bg-gray-800 shadow-sm border-r border-gray-200 dark:border-gray-700 min-h-screen transition-colors duration-300">
+            <div class="p-6">
+                <nav class="space-y-2">
+                    <div class="sidebar-item active">
+                        <i class="fas fa-chart-line w-5"></i>
+                        <span class="ml-3">Dashboard</span>
+                    </div>
+                    <div class="sidebar-item">
+                        <i class="fas fa-wallet w-5"></i>
+                        <span class="ml-3">Portfolio</span>
+                    </div>
+                    <div class="sidebar-item">
+                        <i class="fas fa-exchange-alt w-5"></i>
+                        <span class="ml-3">Transactions</span>
+                    </div>
+                    <div class="sidebar-item">
+                        <i class="fas fa-chart-bar w-5"></i>
+                        <span class="ml-3">Markets</span>
+                    </div>
+                    <div class="sidebar-item">
+                        <i class="fas fa-newspaper w-5"></i>
+                        <span class="ml-3">News</span>
+                    </div>
+                    <div class="sidebar-item">
+                        <i class="fas fa-cog w-5"></i>
+                        <span class="ml-3">Settings</span>
+                    </div>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Mobile Sidebar Overlay -->
+        <div id="mobileOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+        
+        <!-- Mobile Sidebar -->
+        <aside id="mobileSidebar" class="fixed left-0 top-0 w-64 h-full bg-white dark:bg-gray-800 shadow-lg z-50 transform -translate-x-full transition-all duration-300 lg:hidden">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-white">Menu</h2>
+                    <button id="closeMobileMenu" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <i class="fas fa-times text-gray-600 dark:text-gray-300"></i>
+                    </button>
+                </div>
+                <nav class="space-y-2">
+                    <div class="sidebar-item active">
+                        <i class="fas fa-chart-line w-5"></i>
+                        <span class="ml-3">Dashboard</span>
+                    </div>
+                    <div class="sidebar-item">
+                        <i class="fas fa-wallet w-5"></i>
+                        <span class="ml-3">Portfolio</span>
+                    </div>
+                    <div class="sidebar-item">
+                        <i class="fas fa-exchange-alt w-5"></i>
+                        <span class="ml-3">Transactions</span>
+                    </div>
+                    <div class="sidebar-item">
+                        <i class="fas fa-chart-bar w-5"></i>
+                        <span class="ml-3">Markets</span>
+                    </div>
+                    <div class="sidebar-item">
+                        <i class="fas fa-newspaper w-5"></i>
+                        <span class="ml-3">News</span>
+                    </div>
+                    <div class="sidebar-item">
+                        <i class="fas fa-cog w-5"></i>
+                        <span class="ml-3">Settings</span>
+                    </div>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-4 lg:p-6 min-w-0 bg-white dark:bg-gray-900 transition-colors duration-300">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8 w-full" data-aos="fade-up">
+                <div class="card min-w-0">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1 min-w-0 pr-4">
+                            <p class="text-sm text-readable-secondary font-semibold">Total Portfolio</p>
+                            <p class="text-xl lg:text-2xl font-bold text-readable truncate">$24,567.89</p>
+                            <p class="text-sm price-positive font-bold">+2.45% (24h)</p>
+                        </div>
+                        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-wallet text-green-600 dark:text-green-400 text-sm lg:text-base"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm text-readable-secondary font-semibold">24h Change</p>
+                            <p class="text-2xl font-bold text-readable truncate">+$1,23.45</p>
+                            <p class="text-sm price-positive font-bold">+5.28%</p>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-chart-line text-blue-600 dark:text-blue-400"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card min-w-0">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1 min-w-0 pr-4">
+                            <p class="text-sm text-readable-secondary font-semibold">Best Performer</p>
+                            <p class="text-xl lg:text-2xl font-bold text-readable truncate">ETH</p>
+                            <p class="text-sm price-positive font-bold">+12.45%</p>
+                        </div>
+                        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fab fa-ethereum text-purple-600 dark:text-purple-400 text-sm lg:text-base"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card min-w-0">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1 min-w-0 pr-4">
+                            <p class="text-sm text-readable-secondary font-semibold">Active Trades</p>
+                            <p class="text-xl lg:text-2xl font-bold text-readable truncate">7</p>
+                            <p class="text-sm text-readable-secondary font-semibold">2 pending</p>
+                        </div>
+                        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-exchange-alt text-orange-600 dark:text-orange-400 text-sm lg:text-base"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts and Tables Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8 w-full">
+                <!-- Portfolio Chart -->
+                <div class="lg:col-span-2 card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-bold text-readable">Portfolio Performance</h3>
+                        <div class="flex space-x-2">
+                            <button id="period-1D" class="period-btn px-3 py-1 text-sm bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-lg transition-all duration-200">1D</button>
+                            <button id="period-7D" class="period-btn px-3 py-1 text-sm text-black dark:text-gray-400 font-bold rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200">7D</button>
+                            <button id="period-1M" class="period-btn px-3 py-1 text-sm text-black dark:text-gray-400 font-bold rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200">1M</button>
+                            <button id="period-1Y" class="period-btn px-3 py-1 text-sm text-black dark:text-gray-400 font-bold rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200">1Y</button>
+                        </div>
+                    </div>
+                    <div class="w-full h-64 relative">
+                        <svg viewBox="0 0 800 300" class="w-full h-full">
+                            <!-- Grid lines -->
+                            <defs>
+                                <pattern id="grid" width="40" height="30" patternUnits="userSpaceOnUse">
+                                    <path d="M 40 0 L 0 0 0 30" fill="none" stroke="#f3f4f6" stroke-width="1" class="dark:stroke-gray-600"/>
+                                </pattern>
+                            </defs>
+                            <rect width="100%" height="100%" fill="url(#grid)" />
+                            
+                            <!-- Static chart line -->
+                            <path d="M 20 250 L 47 240 L 74 245 L 101 230 L 128 235 L 155 220 L 182 210 L 209 215 L 236 200 L 263 190 L 290 195 L 317 180 L 344 170 L 371 175 L 398 160 L 425 150 L 452 155 L 479 140 L 506 130 L 533 135 L 560 120 L 587 110 L 614 115 L 641 100 L 668 90 L 695 95 L 722 80 L 749 70 L 776 60 L 780 50" 
+                                  fill="none" 
+                                  stroke="#3b82f6" 
+                                  stroke-width="3" 
+                                  class="drop-shadow-sm"/>
+                            
+                            <!-- Fill area under line -->
+                            <path d="M 20 250 L 47 240 L 74 245 L 101 230 L 128 235 L 155 220 L 182 210 L 209 215 L 236 200 L 263 190 L 290 195 L 317 180 L 344 170 L 371 175 L 398 160 L 425 150 L 452 155 L 479 140 L 506 130 L 533 135 L 560 120 L 587 110 L 614 115 L 641 100 L 668 90 L 695 95 L 722 80 L 749 70 L 776 60 L 780 50 L 780 280 L 20 280 Z" 
+                                  fill="rgba(59, 130, 246, 0.1)"/>
+                            
+                            <!-- Y-axis labels -->
+                            <text x="10" y="60" class="text-xs fill-gray-600 dark:fill-gray-400">$28k</text>
+                            <text x="10" y="110" class="text-xs fill-gray-600 dark:fill-gray-400">$26k</text>
+                            <text x="10" y="160" class="text-xs fill-gray-600 dark:fill-gray-400">$24k</text>
+                            <text x="10" y="210" class="text-xs fill-gray-600 dark:fill-gray-400">$22k</text>
+                            <text x="10" y="260" class="text-xs fill-gray-600 dark:fill-gray-400">$20k</text>
+                            
+                            <!-- X-axis labels -->
+                            <text x="20" y="295" class="text-xs fill-gray-600 dark:fill-gray-400">Jan</text>
+                            <text x="200" y="295" class="text-xs fill-gray-600 dark:fill-gray-400">Feb</text>
+                            <text x="400" y="295" class="text-xs fill-gray-600 dark:fill-gray-400">Mar</text>
+                            <text x="600" y="295" class="text-xs fill-gray-600 dark:fill-gray-400">Apr</text>
+                            <text x="780" y="295" class="text-xs fill-gray-600 dark:fill-gray-400">May</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Top Cryptocurrencies -->
+                <div class="card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                        <h3 class="text-lg font-bold text-readable">Top Cryptocurrencies</h3>
+                        <!-- Mobile Search -->
+                        <div class="md:hidden relative">
+                            <input type="text" 
+                                   id="mobileSearch"
+                                   placeholder="Search coins..." 
+                                   class="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <i class="fas fa-search absolute left-2.5 top-2.5 text-gray-400 text-sm"></i>
+                        </div>
+                    </div>
+                    <div id="cryptoList" class="space-y-4">
+                        <!-- Crypto items will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="card w-full" data-aos="fade-up" data-aos-delay="300">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-bold text-readable">Recent Transactions</h3>
+                    <button class="text-blue-600 dark:text-blue-400 hover:underline">View All</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200 dark:border-gray-700">
+                                <th class="text-left py-3 text-sm font-bold text-readable">Asset</th>
+                                <th class="text-left py-3 text-sm font-bold text-readable">Type</th>
+                                <th class="text-left py-3 text-sm font-bold text-readable">Amount</th>
+                                <th class="text-left py-3 text-sm font-bold text-readable">Price</th>
+                                <th class="text-left py-3 text-sm font-bold text-readable">Date</th>
+                                <th class="text-left py-3 text-sm font-bold text-readable">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsList">
+                            <!-- Transaction rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
